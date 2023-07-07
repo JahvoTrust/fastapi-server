@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 import os
 import openai
 import pandas as pd
-from models.openai import Question
+# from models.openai import Question
 import requests
 
 load_dotenv()
@@ -24,6 +24,9 @@ openai.api_type = "azure"
 openai.api_version = '2023-05-15'
 openai.api_base = os.getenv('OPENAI_API_BASE')
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+class Question(BaseModel):
+    question: str
 
 from langchain.memory import MongoDBChatMessageHistory
 
@@ -115,8 +118,9 @@ def get_qna(question: Question):
     print(docsconvert)
     print(question)
     print(chain)
-    response = chain({"input_documents": docsconvert, "human_input": question}, return_only_outputs=True)
+    response = chain({"input_documents": docsconvert, "human_input": str(question)}, return_only_outputs=True)
     answer = response['output_text']
+    
     if not answer:
         return {"data": "answer not found"}
-    return {"data": answer}
+    return {"data": chain.memory.buffer}
